@@ -20,6 +20,7 @@ CREATE OR REPLACE PACKAGE BODY HR.mview_cdc IS
             l_mview_log_exists  NUMBER;
             l_pk_available      NUMBER;
             l_collist           VARCHAR2(4000 CHAR);
+            l_mview_log_name    VARCHAR2(4000 CHAR);
         BEGIN
             SELECT
                 COUNT(1)
@@ -74,9 +75,17 @@ CREATE OR REPLACE PACKAGE BODY HR.mview_cdc IS
                                   || l_options
                                   || ' INCLUDING NEW VALUES';
 
+            SELECT
+                log_table
+            INTO l_mview_log_name
+            FROM
+                user_mview_logs
+            WHERE
+                master = p_table_name;
+
           --DBMS_OUTPUT.PUT_LINE( 'CREATE MATERIALIZED VIEW LOG ON '||I.TABLE_NAME||' WITH '||L_OPTIONS||' INCLUDING NEW VALUES');
-                EXECUTE IMMEDIATE 'ALTER TABLE MLOG$_'
-                                  || p_table_name
+                EXECUTE IMMEDIATE 'ALTER TABLE '
+                                  || l_mview_log_name
                                   || ' ADD CHANGE_TIME$$ TIMESTAMP DEFAULT SYSTIMESTAMP';
             END IF;
 
